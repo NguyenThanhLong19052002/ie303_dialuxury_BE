@@ -9,12 +9,12 @@ public class product {
     @Id
 
 
-    private String productId;
+    private String productid;
     private String name;
     private String image;
     private Number price;
     private String category;
-    private String unit;
+    private String dvt;
     private String quality;
     private String color;
     private String mass;
@@ -23,12 +23,12 @@ public class product {
     public product() {
     }
 
-    public String getProductId() {
-        return productId;
+    public String getproductid() {
+        return productid;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setproductid(String productid) {
+        this.productid = productid;
     }
 
     public String getName() {
@@ -63,12 +63,12 @@ public class product {
         this.category = category;
     }
 
-    public String getUnit() {
-        return unit;
+    public String getdvt() {
+        return dvt;
     }
 
-    public void setUnit(String unit) {
-        this.unit = unit;
+    public void setdvt(String dvt) {
+        this.dvt = dvt;
     }
 
     public String getQuality() {
