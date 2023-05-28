@@ -11,11 +11,11 @@ import java.util.List;
 public class productController {
     @Autowired
     private productService productService;
-    @PostMapping("")
-    public String add(@RequestBody product product){
-        productService.saveproduct(product);
-        return "New product is added";
-    }
+//    @PostMapping("")
+//    public String add(@RequestBody product product){
+//        productService.saveproduct(product);
+//        return "New product is added";
+//    }
 
     @GetMapping("")
     public List<product> list(){

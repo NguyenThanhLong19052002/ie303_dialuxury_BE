@@ -19,6 +19,9 @@ import java.util.Date;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
+import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
 
 
 
@@ -47,7 +50,7 @@ public class userController {
 
     //    Đăng nhập đăng ký
     // Các mã thông báo JWT và các hằng số khác
-    private static final String SECRET_KEY = "your-secret-key";
+    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private static final long EXPIRATION_TIME = 86400000; // 24 giờ
 
     @Autowired
@@ -77,11 +80,20 @@ public class userController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody user user) {
+        // Kiểm tra xem email tồn tại trong cơ sở dữ liệu hay không
+        user existingUser = userRepository.findByEmail(user.getEmail());
+        if (existingUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email không tồn tại");
+        }
+
         try {
             // Xác thực thông tin đăng nhập
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
+
+            // Tạo key từ chuỗi SECRET_KEY
+            // SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
 
             // Tạo thông tin người dùng
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -91,13 +103,13 @@ public class userController {
             String token = Jwts.builder()
                     .setSubject(userDetails.getUsername())
                     .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                    .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
+                    .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                     .compact();
 
             // Trả về token
             return ResponseEntity.ok(new AuthResponse(token));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email hoặc password không hợp lệ");
         }
     }
 

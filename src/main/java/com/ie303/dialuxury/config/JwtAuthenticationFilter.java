@@ -12,8 +12,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import io.jsonwebtoken.SignatureAlgorithm;
 public class JwtAuthenticationFilter extends BasicAuthenticationFilter{
-    private static final String SECRET_KEY = "your-secret-key";
+    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
