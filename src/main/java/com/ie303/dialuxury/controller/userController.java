@@ -1,9 +1,12 @@
 package com.ie303.dialuxury.controller;
 
 import com.ie303.dialuxury.model.user;
+import com.ie303.dialuxury.model.order;
+import com.ie303.dialuxury.model.product;
 import com.ie303.dialuxury.service.userServiceImpl;
 //import com.ie303.dialuxury.service.userService;
 import com.ie303.dialuxury.repository.userRepository;
+import com.ie303.dialuxury.repository.orderRepository;
 import com.ie303.dialuxury.model.AuthResponse;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,7 +27,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import io.jsonwebtoken.security.Keys;
 
-import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
 
 
@@ -54,6 +56,9 @@ public class userController {
 
     @Autowired
     private userRepository userRepository;
+
+    @Autowired
+    private orderRepository orderRepository;
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -125,23 +130,75 @@ public class userController {
         }
     }
 
-//    sửa thông tin 1 user
-@PatchMapping("/{userId}")
-public ResponseEntity<user> updateUser(@PathVariable String userId, @RequestBody user updatedUser) {
-    user user = userRepository.findByUserId(userId);
-    if (user != null) {
-        // Kiểm tra và cập nhật các trường không phải là email
-        user.setName(updatedUser.getName());
-        user.setGender(updatedUser.getGender());
-        user.setPhoneNumber(updatedUser.getPhoneNumber());
-        user.setAddress(updatedUser.getAddress());
-        user.setPassword(updatedUser.getPassword());
-        user.setRole(updatedUser.getRole());
+    //    sửa thông tin 1 user
+    @PatchMapping("/{userId}")
+    public ResponseEntity<user> updateUser(@PathVariable String userId, @RequestBody user updatedUser) {
+        user user = userRepository.findByUserId(userId);
+        if (user != null) {
+            // Kiểm tra và cập nhật các trường không phải là email
+            user.setName(updatedUser.getName());
+            user.setGender(updatedUser.getGender());
+            user.setPhoneNumber(updatedUser.getPhoneNumber());
+            user.setAddress(updatedUser.getAddress());
+            user.setPassword(updatedUser.getPassword());
+            user.setRole(updatedUser.getRole());
 
-        userRepository.save(user);
-        return ResponseEntity.ok(user);
-    } else {
-        return ResponseEntity.notFound().build();
+            userRepository.save(user);
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
-}
+
+    // API thêm hóa đơn
+    @PostMapping("/{userId}/order")
+    public String addOrder(@PathVariable String userId,@RequestBody order order) {
+        try {
+            order isExistsOrder = orderRepository.findByMahd(order.getMahd());
+            if (isExistsOrder != null) {
+                return "Mã hóa đơn này đã tồn tại";
+            }
+            Long tongtien = 0L;
+            order.setTinhtrang("chưa xử lý");
+            order.setNgaylap(new Date());
+            order.setUserId(userId);
+            for (product product : order.getSanphams()) {
+                tongtien += product.getPrice().longValue();
+            }
+            order.setTongtien(tongtien);
+            orderRepository.save(order);
+            return "Thêm hóa đơn thành công";
+        } catch (Exception ex) {
+            return "Có lỗi xảy ra" + ex.getMessage();
+        }
+
+    }
+
+    // API xóa hóa đơn
+    @DeleteMapping("/order/{mahd}")
+    public String deleteOrder(@PathVariable String mahd) {
+        try {
+            order order = orderRepository.findByMahdAndTinhtrang(mahd, "chưa xử lý");
+            if (order != null) {
+                orderRepository.delete(order);
+                return "Xóa hóa đơn thành công";
+            } else {
+                return "Xóa hóa đơn thất bại";
+            }
+        } catch (Exception ex) {
+            return "Có lỗi xảy ra" + ex.getMessage();
+        }
+
+    }
+
+    //    API lấy ra tất cả các hóa đơn của 1 user
+    @GetMapping("/{userId}/order")
+    public ResponseEntity<order> getOrder(@PathVariable String userId) {
+        order order = orderRepository.findByUserId(userId);
+        if (order != null) {
+            return ResponseEntity.ok(order);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
