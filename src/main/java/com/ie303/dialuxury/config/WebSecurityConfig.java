@@ -23,11 +23,13 @@
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
         }
 
+//        các api không cần đăng nhập
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable().authorizeRequests()
                     .antMatchers("/user/signup").permitAll()
                     .antMatchers("/user/login").permitAll()
+                    .antMatchers("/product").permitAll()
                     .anyRequest().authenticated();
         }
 

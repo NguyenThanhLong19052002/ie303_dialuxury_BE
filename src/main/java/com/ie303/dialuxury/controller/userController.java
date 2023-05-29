@@ -1,4 +1,5 @@
 package com.ie303.dialuxury.controller;
+
 import com.ie303.dialuxury.model.user;
 import com.ie303.dialuxury.service.userServiceImpl;
 //import com.ie303.dialuxury.service.userService;
@@ -15,18 +16,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import io.jsonwebtoken.Jwts;
+
 import java.util.Date;
+
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import io.jsonwebtoken.security.Keys;
+
 import java.nio.charset.StandardCharsets;
 import javax.crypto.SecretKey;
-
-
-
-
-
 
 
 import java.util.List;
@@ -114,4 +113,35 @@ public class userController {
     }
 
     // Các API và phương thức khác cho đăng nhập
+
+    //    lấy thông tin 1 user
+    @GetMapping("/{userId}")
+    public ResponseEntity<user> getUser(@PathVariable String userId) {
+        user user = userRepository.findByUserId(userId);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+//    sửa thông tin 1 user
+@PatchMapping("/{userId}")
+public ResponseEntity<user> updateUser(@PathVariable String userId, @RequestBody user updatedUser) {
+    user user = userRepository.findByUserId(userId);
+    if (user != null) {
+        // Kiểm tra và cập nhật các trường không phải là email
+        user.setName(updatedUser.getName());
+        user.setGender(updatedUser.getGender());
+        user.setPhoneNumber(updatedUser.getPhoneNumber());
+        user.setAddress(updatedUser.getAddress());
+        user.setPassword(updatedUser.getPassword());
+        user.setRole(updatedUser.getRole());
+
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
+    } else {
+        return ResponseEntity.notFound().build();
+    }
+}
 }
