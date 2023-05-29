@@ -3,6 +3,9 @@ import com.ie303.dialuxury.model.product;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface productRepository extends MongoRepository<product, String> {
+    List<product> findByNameContainingIgnoreCase(String name);
 }
