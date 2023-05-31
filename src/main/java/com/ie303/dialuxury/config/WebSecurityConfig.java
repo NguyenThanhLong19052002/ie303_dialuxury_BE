@@ -27,10 +27,16 @@
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.csrf().disable().authorizeRequests()
+                    .antMatchers("/").permitAll()
                     .antMatchers("/user/signup").permitAll()
                     .antMatchers("/user/login").permitAll()
                     .antMatchers("/product").permitAll()
-                    .antMatchers("/product/{productid}").permitAll()
+                    .antMatchers("/product/{_id}").permitAll()
+                    .antMatchers("/cart").permitAll()
+                    .antMatchers("/cart/add").permitAll()
+                    .antMatchers("/cart/update").permitAll()
+                    .antMatchers("/cart/remove/{cartItemId}").permitAll()
+                    .antMatchers("/cart/clear").permitAll()
                     .anyRequest().authenticated();
         }
 
