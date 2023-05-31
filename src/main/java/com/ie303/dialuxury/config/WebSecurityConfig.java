@@ -30,6 +30,7 @@
                     .antMatchers("/user/signup").permitAll()
                     .antMatchers("/user/login").permitAll()
                     .antMatchers("/product").permitAll()
+                    .antMatchers("/product/{productid}").permitAll()
                     .anyRequest().authenticated();
         }
 

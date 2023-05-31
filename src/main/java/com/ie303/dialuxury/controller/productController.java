@@ -51,11 +51,11 @@ public class productController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/search")
-
-    public List<product> searchProduct(@RequestParam("name") String name) {
-        return productRepository.findByNameContainingIgnoreCase(name);
-    }
+//    @GetMapping("/search")
+//
+//    public List<product> searchProduct(@RequestParam("name") String name) {
+//        return productRepository.findByNameContainingIgnoreCase(name);
+//    }
 
 
 }
