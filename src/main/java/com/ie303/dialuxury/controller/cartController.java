@@ -1,42 +1,44 @@
 package com.ie303.dialuxury.controller;
 
 import com.ie303.dialuxury.model.cart;
-import com.ie303.dialuxury.service.cartService;
 
+import com.ie303.dialuxury.service.cartServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
 @CrossOrigin
 public class cartController {
     @Autowired
-    private cartService cartService;
+    private final cartServiceImpl cartService;
+
+    public cartController(cartServiceImpl cartService) {
+        this.cartService = cartService;
+    }
 
     @PostMapping("/add")
-    public void addToCart(@RequestBody cart cartItem) {
-        cartService.addToCart(cartItem);
+    public void addToCart(@RequestBody cart cartItem, HttpServletRequest request) {
+        cartService.addToCart(cartItem, request);
     }
 
     @PostMapping("/update")
-    public void updateCartItem(@RequestBody cart cartItem) {
-        cartService.updateCartItem(cartItem);
+    public void updateCartItem(@RequestBody cart cartItem, HttpServletRequest request) {
+        cartService.updateCartItem(cartItem, request);
     }
 
     @DeleteMapping("/remove/{cartItemId}")
-    public void removeCartItem(@PathVariable String cartItemId) {
-        cartService.removeCartItem(cartItemId);
+    public void removeCartItem(@PathVariable String cartItemId, HttpServletRequest request) {
+        cartService.removeCartItem(cartItemId, request);
     }
 
-    @GetMapping
-    public List<cart> getCartItems() {
-        return cartService.getCartItems();
+    @GetMapping("")
+    public List<cart> getCartItems(HttpServletRequest request) {
+        return cartService.getCartItems(request);
     }
 
     @DeleteMapping("/clear")

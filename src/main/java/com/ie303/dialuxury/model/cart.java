@@ -2,7 +2,6 @@ package com.ie303.dialuxury.model;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document
 public class cart {
     private product product;
     private double totalPrice;
