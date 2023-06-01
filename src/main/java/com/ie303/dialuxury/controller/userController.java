@@ -28,6 +28,8 @@ import org.springframework.http.HttpStatus;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
+import org.springframework.security.access.prepost.PreAuthorize;
+
 
 
 import java.util.List;
@@ -35,6 +37,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/user")
 @CrossOrigin
+@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class userController {
 //    @Autowired
 //    private userService userService;
@@ -86,12 +89,13 @@ public class userController {
     public ResponseEntity<?> login(@RequestBody user user) {
         // Kiểm tra xem email tồn tại trong cơ sở dữ liệu hay không
         user existingUser = userRepository.findByEmail(user.getEmail());
+        String userId = existingUser.getUserId();
         if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email không tồn tại");
         }
 
 
-        
+
         try {
             // Xác thực thông tin đăng nhập
             Authentication authentication = authenticationManager.authenticate(
@@ -112,8 +116,10 @@ public class userController {
                     .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                     .compact();
 
+            AuthResponse response = new AuthResponse(token, existingUser.getUserId(), existingUser.getRole());
+
             // Trả về token
-            return ResponseEntity.ok(new AuthResponse(token));
+            return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email hoặc password không hợp lệ");
         }
