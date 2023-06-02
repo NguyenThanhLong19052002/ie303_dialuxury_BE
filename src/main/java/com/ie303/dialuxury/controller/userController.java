@@ -34,6 +34,15 @@ import com.ie303.dialuxury.config.Error;
 //import com.ie303.dialuxury.config.ChangePasswordRequest;
 //import com.ie303.dialuxury.config.UserNotFoundException;
 import com.ie303.dialuxury.config.*;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 
 import java.util.List;
 
@@ -42,18 +51,11 @@ import java.util.List;
 @CrossOrigin
 @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class userController {
-//    @Autowired
-//    private userService userService;
-//    @PostMapping("")
-//    public String add(@RequestBody user user){
-//        userService.saveuser(user);
-//        return "New user is added";
-//    }
-//
-//    @GetMapping("")
-//    public List<user> list(){
-//        return userService.getAllusers();
-//    }
+    static String verificationCode;
+    @Autowired
+    private JavaMailSender javaMailSender;
+    private final Map<String, String> verificationCodes = new HashMap<>();
+
 
     //    Đăng nhập đăng ký
     // Các mã thông báo JWT và các hằng số khác
@@ -246,5 +248,65 @@ public class userController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+//    quên mật khẩu
+    @PostMapping("/{email}/forgot")
+    @ResponseBody
+    public String forgotPassword(@PathVariable String email) {
+        // Kiểm tra sự tồn tại của email trong hệ thống
+        user user = userRepository.findByEmail(email);
+        if (user == null) {
+            return "Email not found";
+        }
+
+        // Tạo mã OTP
+        verificationCode = generateVerificationCode();
+
+        // Lưu trữ mã OTP cho email người dùng
+        verificationCodes.put(email, verificationCode);
+
+        // Gửi email chứa mã OTP
+        sendVerificationCodeEmail(email, verificationCode);
+
+        return "Verification code sent to email";
+    }
+
+    @PostMapping("/{email}/reset")
+    @ResponseBody
+    public String resetPassword(@PathVariable String email, @RequestParam String verificationCode, @RequestParam String newPassword) {
+        // Kiểm tra sự tồn tại của email trong hệ thống
+        user user = userRepository.findByEmail(email);
+        if (user == null) {
+            return "Email not found";
+        }
+
+        // Kiểm tra mã OTP nhập vào
+        String savedVerificationCode = verificationCodes.get(email);
+        if (savedVerificationCode == null || !savedVerificationCode.equals(verificationCode)) {
+            return "Invalid verification code";
+        }
+
+        // Reset mật khẩu cho người dùng
+        userRepository.resetPassword(email, newPassword);
+
+        // Xóa mã OTP đã sử dụng
+        verificationCodes.remove(email);
+
+        return "Password reset successfully";
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        int otp = random.nextInt(900000) + 100000; // Tạo số ngẫu nhiên từ 100000 đến 999999
+        return String.valueOf(otp);
+    }
+
+    private void sendVerificationCodeEmail(String email, String verificationCode) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Reset Password Verification Code");
+        message.setText("Your verification code is: " + verificationCode);
+        javaMailSender.send(message);
     }
 }
