@@ -31,6 +31,9 @@ import javax.crypto.SecretKey;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.ie303.dialuxury.config.Error;
+//import com.ie303.dialuxury.config.ChangePasswordRequest;
+//import com.ie303.dialuxury.config.UserNotFoundException;
+import com.ie303.dialuxury.config.*;
 
 import java.util.List;
 
@@ -127,6 +130,24 @@ public class userController {
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email hoặc password không hợp lệ");
         }
+    }
+
+    @PutMapping("/{userId}/change-password")
+    public void changePassword(@PathVariable String userId, @RequestBody ChangePasswordRequest request) {
+        user user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Giải mã mật khẩu đã lưu của người dùng từ cơ sở dữ liệu
+        String storedPassword = user.getPassword();
+
+        // So sánh mật khẩu cũ đã giải mã với mật khẩu cũ mà người dùng cung cấp
+        if (!bCryptPasswordEncoder.matches(request.getCurrentPassword(), storedPassword)) {
+            throw new IncorrectPasswordException("Mật khẩu cũ không chính xác");
+        }
+
+        // Cập nhật mật khẩu mới
+        String newPassword = bCryptPasswordEncoder.encode(request.getNewPassword());
+        user.setPassword(newPassword);
+        userRepository.save(user);
     }
 
     // Các API và phương thức khác cho đăng nhập
