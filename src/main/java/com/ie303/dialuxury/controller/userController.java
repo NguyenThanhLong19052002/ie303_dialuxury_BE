@@ -30,7 +30,7 @@ import io.jsonwebtoken.security.Keys;
 import javax.crypto.SecretKey;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-
+import com.ie303.dialuxury.config.Error;
 
 import java.util.List;
 
@@ -70,16 +70,21 @@ public class userController {
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/signup")
-    public String signUp(@RequestBody user user) {
+    public ResponseEntity<Error> signUp(@RequestBody user user) {
         if (userRepository.findByEmail(user.getEmail()) != null) {
-            return "Email này đã được đăng ký!";
+            Error error = new Error();
+            error.setMessage("Email này đã được đăng ký!");
+            error.setErrorCode(500); // Mã lỗi tùy chọn
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        return "Đăng ký tài khoản thành công!";
+        return ResponseEntity.ok().build();
     }
+
 
     @Autowired
     private userServiceImpl userDetailsService;
