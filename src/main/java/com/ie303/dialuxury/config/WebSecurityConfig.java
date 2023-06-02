@@ -34,6 +34,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/login").permitAll()
                 .antMatchers("/product").permitAll()
                 .antMatchers("/user/{userId}").permitAll()
+                .antMatchers("/cart").permitAll()
+                .antMatchers("/cart/add").permitAll()
+                .antMatchers("/cart/update").permitAll()
+                .antMatchers("/cart/remove/{cartItemId}").permitAll()
+                .antMatchers("/cart/clear").permitAll()
                 .anyRequest().authenticated()
                 .and().cors();
     }
