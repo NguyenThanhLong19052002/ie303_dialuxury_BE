@@ -29,12 +29,15 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.ie303.dialuxury.config.Error;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/user")
 @CrossOrigin
+@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class userController {
 //    @Autowired
 //    private userService userService;
@@ -67,16 +70,21 @@ public class userController {
     private AuthenticationManager authenticationManager;
 
     @PostMapping("/signup")
-    public String signUp(@RequestBody user user) {
+    public ResponseEntity<Error> signUp(@RequestBody user user) {
         if (userRepository.findByEmail(user.getEmail()) != null) {
-            return "Email này đã được đăng ký!";
+            Error error = new Error();
+            error.setMessage("Email này đã được đăng ký!");
+            error.setErrorCode(500); // Mã lỗi tùy chọn
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
 
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        return "Đăng ký tài khoản thành công!";
+        return ResponseEntity.ok().build();
     }
+
 
     @Autowired
     private userServiceImpl userDetailsService;
@@ -86,9 +94,11 @@ public class userController {
     public ResponseEntity<?> login(@RequestBody user user) {
         // Kiểm tra xem email tồn tại trong cơ sở dữ liệu hay không
         user existingUser = userRepository.findByEmail(user.getEmail());
+        String userId = existingUser.getUserId();
         if (existingUser == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email không tồn tại");
         }
+
 
         try {
             // Xác thực thông tin đăng nhập
@@ -110,8 +120,10 @@ public class userController {
                     .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
                     .compact();
 
+            AuthResponse response = new AuthResponse(token, existingUser.getUserId(), existingUser.getRole());
+
             // Trả về token
-            return ResponseEntity.ok(new AuthResponse(token));
+            return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email hoặc password không hợp lệ");
         }
@@ -136,12 +148,24 @@ public class userController {
         user user = userRepository.findByUserId(userId);
         if (user != null) {
             // Kiểm tra và cập nhật các trường không phải là email
-            user.setName(updatedUser.getName());
-            user.setGender(updatedUser.getGender());
-            user.setPhoneNumber(updatedUser.getPhoneNumber());
-            user.setAddress(updatedUser.getAddress());
-            user.setPassword(updatedUser.getPassword());
-            user.setRole(updatedUser.getRole());
+            if (updatedUser.getName() != null) {
+                user.setName(updatedUser.getName());
+            }
+            if (updatedUser.getGender() != null) {
+                user.setGender(updatedUser.getGender());
+            }
+            if (updatedUser.getPhoneNumber() != null) {
+                user.setPhoneNumber(updatedUser.getPhoneNumber());
+            }
+            if (updatedUser.getAddress() != null) {
+                user.setAddress(updatedUser.getAddress());
+            }
+            if (updatedUser.getPassword() != null) {
+                user.setPassword(updatedUser.getPassword());
+            }
+            if (updatedUser.getRole() != null) {
+                user.setRole(updatedUser.getRole());
+            }
 
             userRepository.save(user);
             return ResponseEntity.ok(user);
@@ -150,9 +174,10 @@ public class userController {
         }
     }
 
+
     // API thêm hóa đơn
     @PostMapping("/{userId}/order")
-    public String addOrder(@PathVariable String userId,@RequestBody order order) {
+    public String addOrder(@PathVariable String userId, @RequestBody order order) {
         try {
             order isExistsOrder = orderRepository.findByMahd(order.getMahd());
             if (isExistsOrder != null) {
