@@ -28,8 +28,8 @@ import org.springframework.http.HttpStatus;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
-import org.springframework.security.access.prepost.PreAuthorize;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 
 
 import java.util.List;
@@ -95,7 +95,6 @@ public class userController {
         }
 
 
-
         try {
             // Xác thực thông tin đăng nhập
             Authentication authentication = authenticationManager.authenticate(
@@ -144,12 +143,24 @@ public class userController {
         user user = userRepository.findByUserId(userId);
         if (user != null) {
             // Kiểm tra và cập nhật các trường không phải là email
-            user.setName(updatedUser.getName());
-            user.setGender(updatedUser.getGender());
-            user.setPhoneNumber(updatedUser.getPhoneNumber());
-            user.setAddress(updatedUser.getAddress());
-            user.setPassword(updatedUser.getPassword());
-            user.setRole(updatedUser.getRole());
+            if (updatedUser.getName() != null) {
+                user.setName(updatedUser.getName());
+            }
+            if (updatedUser.getGender() != null) {
+                user.setGender(updatedUser.getGender());
+            }
+            if (updatedUser.getPhoneNumber() != null) {
+                user.setPhoneNumber(updatedUser.getPhoneNumber());
+            }
+            if (updatedUser.getAddress() != null) {
+                user.setAddress(updatedUser.getAddress());
+            }
+            if (updatedUser.getPassword() != null) {
+                user.setPassword(updatedUser.getPassword());
+            }
+            if (updatedUser.getRole() != null) {
+                user.setRole(updatedUser.getRole());
+            }
 
             userRepository.save(user);
             return ResponseEntity.ok(user);
@@ -158,9 +169,10 @@ public class userController {
         }
     }
 
+
     // API thêm hóa đơn
     @PostMapping("/{userId}/order")
-    public String addOrder(@PathVariable String userId,@RequestBody order order) {
+    public String addOrder(@PathVariable String userId, @RequestBody order order) {
         try {
             order isExistsOrder = orderRepository.findByMahd(order.getMahd());
             if (isExistsOrder != null) {

@@ -52,9 +52,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*"); // Cho phép truy cập từ bất kỳ nguồn gốc nào
+        configuration.addAllowedOrigin("http://localhost:3000"); // Cho phép truy cập từ bất kỳ nguồn gốc nào
         configuration.addAllowedMethod("*"); // Cho phép tất cả các phương thức (GET, POST, PUT, DELETE, vv.)
         configuration.addAllowedHeader("*"); // Cho phép tất cả các header
+        configuration.setAllowCredentials(true);
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // Áp dụng cấu hình CORS cho tất cả các URL
