@@ -13,11 +13,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfiguration;
 
+
 import com.ie303.dialuxury.service.userServiceImpl;
 
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+
     @Autowired
     private userServiceImpl userDetailsService;
 
@@ -40,6 +43,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/cart/update").permitAll()
                 .antMatchers("/cart/remove/{cartItemId}").permitAll()
                 .antMatchers("/cart/clear").permitAll()
+                .antMatchers("/user/{userId}/change-password").permitAll()
+                .antMatchers("/user/{email}/reset").permitAll()
+                .antMatchers("/user/{email}/forgot").permitAll()
+                .antMatchers("/user/{email}/recovery").permitAll()
+
                 .anyRequest().authenticated()
                 .and().cors();
     }
