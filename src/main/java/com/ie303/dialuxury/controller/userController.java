@@ -187,10 +187,10 @@ public class userController {
             order.setTinhtrang("chưa xử lý");
             order.setNgaylap(new Date());
             order.setUserId(userId);
-            for (product product : order.getSanphams()) {
-                tongtien += product.getPrice().longValue();
-            }
-            order.setTongtien(tongtien);
+//            for (product product : order.getSanphams()) {
+//                tongtien += product.getPrice().longValue();
+//            }
+//            order.setTongtien(tongtien);
             orderRepository.save(order);
             return "Thêm hóa đơn thành công";
         } catch (Exception ex) {
