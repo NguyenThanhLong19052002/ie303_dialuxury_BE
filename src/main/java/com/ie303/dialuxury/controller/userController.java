@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-
 import java.util.List;
 
 @RestController
@@ -51,10 +50,13 @@ import java.util.List;
 @CrossOrigin
 @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
 public class userController {
-    static String verificationCode;
+    //    String verificationCode;
     @Autowired
     private JavaMailSender javaMailSender;
-    private final Map<String, String> verificationCodes = new HashMap<>();
+//    private static final Map<String, String> verificationCodes = new HashMap<>();
+
+    @Autowired
+    private VerificationCodeManager verificationCodeManager;
 
 
     //    Đăng nhập đăng ký
@@ -79,7 +81,7 @@ public class userController {
         if (userRepository.findByEmail(user.getEmail()) != null) {
             Error error = new Error();
             error.setMessage("Email này đã được đăng ký!");
-            error.setErrorCode(500); // Mã lỗi tùy chọn
+            error.setErrorCode(403); // Mã lỗi tùy chọn
 
             return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
         }
@@ -107,9 +109,7 @@ public class userController {
 
         try {
             // Xác thực thông tin đăng nhập
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
-            );
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
 
             // Tạo key từ chuỗi SECRET_KEY
             // SecretKey key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
@@ -119,11 +119,7 @@ public class userController {
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
 
             // Tạo token JWT
-            String token = Jwts.builder()
-                    .setSubject(userDetails.getUsername())
-                    .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                    .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
-                    .compact();
+            String token = Jwts.builder().setSubject(userDetails.getUsername()).setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)).signWith(SECRET_KEY, SignatureAlgorithm.HS256).compact();
 
             AuthResponse response = new AuthResponse(token, existingUser.getUserId(), existingUser.getRole());
 
@@ -158,6 +154,16 @@ public class userController {
     @GetMapping("/{userId}")
     public ResponseEntity<user> getUser(@PathVariable String userId) {
         user user = userRepository.findByUserId(userId);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<user> getUserByEmail(@PathVariable String email) {
+        user user = userRepository.findByEmail(email);
         if (user != null) {
             return ResponseEntity.ok(user);
         } else {
@@ -250,7 +256,7 @@ public class userController {
         }
     }
 
-//    quên mật khẩu
+    //    quên mật khẩu
     @PostMapping("/{email}/forgot")
     @ResponseBody
     public String forgotPassword(@PathVariable String email) {
@@ -261,10 +267,10 @@ public class userController {
         }
 
         // Tạo mã OTP
-        verificationCode = generateVerificationCode();
+        String verificationCode = generateVerificationCode();
 
-        // Lưu trữ mã OTP cho email người dùng
-        verificationCodes.put(email, verificationCode);
+        // Lưu trữ mã OTP cho email người dùng bằng cách sử dụng VerificationCodeManager
+        verificationCodeManager.addVerificationCode(email, verificationCode);
 
         // Gửi email chứa mã OTP
         sendVerificationCodeEmail(email, verificationCode);
@@ -272,29 +278,49 @@ public class userController {
         return "Verification code sent to email";
     }
 
-    @PostMapping("/{email}/reset")
+    @GetMapping("/{email}/reset")
     @ResponseBody
-    public String resetPassword(@PathVariable String email, @RequestParam String verificationCode, @RequestParam String newPassword) {
+    public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestParam("code") String code) {
         // Kiểm tra sự tồn tại của email trong hệ thống
         user user = userRepository.findByEmail(email);
         if (user == null) {
-            return "Email not found";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy email!");
         }
 
-        // Kiểm tra mã OTP nhập vào
-        String savedVerificationCode = verificationCodes.get(email);
-        if (savedVerificationCode == null || !savedVerificationCode.equals(verificationCode)) {
-            return "Invalid verification code";
+        // Lấy mã xác thực từ VerificationCodeManager
+        String savedVerificationCode = verificationCodeManager.getVerificationCode(email);
+
+        // Kiểm tra mã xác thực
+        if (savedVerificationCode == null || !savedVerificationCode.equals(code)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid verification code");
         }
 
-        // Reset mật khẩu cho người dùng
-        userRepository.resetPassword(email, newPassword);
 
-        // Xóa mã OTP đã sử dụng
-        verificationCodes.remove(email);
-
-        return "Password reset successfully";
+        return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{email}/recovery")
+    public void recoveryPassword(@PathVariable String email, @RequestBody ChangePasswordRequest request) {
+        user user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IncorrectPasswordException("user không tồn tại");
+        }
+
+        // Cập nhật mật khẩu mới
+        if (verificationCodeManager.getVerificationCode(email) != null) {
+            String newPassword = bCryptPasswordEncoder.encode(request.getNewPassword());
+            user.setPassword(newPassword);
+            userRepository.save(user);
+
+            // Xóa mã xác thực sau khi sử dụng
+            verificationCodeManager.removeVerificationCode(email);
+        }
+        else{
+            throw new IncorrectPasswordException("Không thể khôi phục mật khẩu");
+        }
+
+    }
+
 
     private String generateVerificationCode() {
         Random random = new Random();

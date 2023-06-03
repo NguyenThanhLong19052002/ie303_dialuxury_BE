@@ -45,6 +45,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/{userId}/change-password").permitAll()
                 .antMatchers("/user/{email}/reset").permitAll()
                 .antMatchers("/user/{email}/forgot").permitAll()
+                .antMatchers("/user/{email}/recovery").permitAll()
+
                 .anyRequest().authenticated()
                 .and().cors();
     }
