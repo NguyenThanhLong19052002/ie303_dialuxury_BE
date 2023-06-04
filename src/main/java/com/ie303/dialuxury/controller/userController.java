@@ -204,6 +204,7 @@ public class userController {
     }
 
 
+
     // API thêm hóa đơn
     @PostMapping("/{userId}/order")
     public String addOrder(@PathVariable String userId, @RequestBody order order) {
@@ -247,10 +248,10 @@ public class userController {
 
     //    API lấy ra tất cả các hóa đơn của 1 user
     @GetMapping("/{userId}/order")
-    public ResponseEntity<order> getOrder(@PathVariable String userId) {
-        order order = orderRepository.findByUserId(userId);
-        if (order != null) {
-            return ResponseEntity.ok(order);
+    public ResponseEntity<List<order>> getOrder(@PathVariable String userId) {
+        List<order> orders = orderRepository.findByUserId(userId);
+        if (orders != null) {
+            return ResponseEntity.ok(orders);
         } else {
             return ResponseEntity.notFound().build();
         }

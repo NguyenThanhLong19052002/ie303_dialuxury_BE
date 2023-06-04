@@ -11,5 +11,5 @@ public interface orderRepository extends MongoRepository<order, String> {
     order findByMahdAndTinhtrang(String mahd, String tinhtrang);
     List<order> findByTinhtrang(String tinhtrang);
     order findByMahd(String mahd);
-    order findByUserId(String userId);
+    List<order> findByUserId(String userId);
 }
