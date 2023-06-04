@@ -4,31 +4,29 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
-import java.util.List;
 
 @Document
 public class order {
     @Id
-    private String mahd;
+    private String _id;
     private String userId;
-    private List<product> sanphams;
-    private String hinh;
-    private Date ngaylap;
-    private String tinhtrang;
-    private String diachigiaohang;
-    private String phuongthucthanhtoan;
-    private Long tongtien;
+    private String image;
+    private Date createdAt;
+    private String status;
+    private String shippingAddress;
+    private String paymentMethod;
+    private long totalPrice;
 
     public order() {
 
     }
 
-    public String getMahd() {
-        return mahd;
+    public String getId() {
+        return _id;
     }
 
-    public void setMahd(String mahd) {
-        this.mahd = mahd;
+    public void setId(String id) {
+        this._id = id;
     }
 
     public String getUserId() {
@@ -39,59 +37,51 @@ public class order {
         this.userId = userId;
     }
 
-    public List<product> getSanphams() {
-        return sanphams;
+    public String getImage() {
+        return image;
     }
 
-    public void XoaSPKhoiHoaDon(product product){
-
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public Date getNgaylap() {
-        return ngaylap;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setNgaylap(Date ngaylap) {
-        this.ngaylap = ngaylap;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getTinhtrang() {
-        return tinhtrang;
+    public String getStatus() {
+        return status;
     }
 
-    public void setTinhtrang(String tinhtrang) {
-        this.tinhtrang = tinhtrang;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public String getDiachigiaohang() {
-        return diachigiaohang;
+    public String getShippingAddress() {
+        return shippingAddress;
     }
 
-    public void setDiachigiaohang(String diachigiaohang) {
-        this.diachigiaohang = diachigiaohang;
+    public void setShippingAddress(String shippingAddress) {
+        this.shippingAddress = shippingAddress;
     }
 
-    public String getPhuongthucthanhtoan() {
-        return phuongthucthanhtoan;
+    public String getPaymentMethod() {
+        return paymentMethod;
     }
 
-    public void setPhuongthucthanhtoan(String phuongthucthanhtoan) {
-        this.phuongthucthanhtoan = phuongthucthanhtoan;
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
-    public Long getTongtien() {
-        return tongtien;
+    public long getTotalPrice() {
+        return totalPrice;
     }
 
-    public void setTongtien(Long tongtien) {
-        this.tongtien = tongtien;
-    }
-
-    public String getHinh() {
-        return hinh;
-    }
-
-    public void setHinh(String hinh) {
-        this.hinh = hinh;
+    public void setTotalPrice(long totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }

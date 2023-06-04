@@ -8,8 +8,9 @@ import java.util.List;
 
 @Repository
 public interface orderRepository extends MongoRepository<order, String> {
-    order findByMahdAndTinhtrang(String mahd, String tinhtrang);
-    List<order> findByTinhtrang(String tinhtrang);
-    order findByMahd(String mahd);
-    List<order> findByUserId(String userId);
+//    order findByIdAndStatus(String _id, String status);
+//    List<order> findByStatus(String status);
+//    order findBy_Id(String _id);
+//    List<order> findByUserId(String userId);
+//    order findFirstByOrderByOrderNumberDesc();
 }

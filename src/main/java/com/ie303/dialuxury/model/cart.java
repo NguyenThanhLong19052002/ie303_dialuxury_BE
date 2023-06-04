@@ -4,7 +4,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 public class cart {
     private product product;
-    private double totalPrice;
+    private long totalPrice;
     private int quantity;
 
     public cart() {
@@ -18,11 +18,11 @@ public class cart {
         this.product = product;
     }
 
-    public double getTotalPrice() {
+    public long getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(double totalPrice) {
+    public void setTotalPrice(long totalPrice) {
         this.totalPrice = totalPrice;
     }
 

@@ -32,9 +32,9 @@ public class adminController {
     }
 
     //    lấy ra hóa đơn có tình trạng là "chưa xử lý"
-    @GetMapping("/order/unprocessed")
-    public List<order> getUnprocessedOrders() {
-        return orderRepository.findByTinhtrang("chưa xử lý");
-    }
+//    @GetMapping("/order/unprocessed")
+//    public List<order> getUnprocessedOrders() {
+//        return orderRepository.findByStatus("chưa xử lý");
+//    }
 
 }
