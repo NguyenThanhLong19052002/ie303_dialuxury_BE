@@ -15,7 +15,7 @@ public class order {
     private String status;
     private String shippingAddress;
     private String paymentMethod;
-    private long totalPrice;
+    private long totalPriceOrder;
 
     public order() {
 
@@ -77,11 +77,11 @@ public class order {
         this.paymentMethod = paymentMethod;
     }
 
-    public long getTotalPrice() {
-        return totalPrice;
+    public long getTotalPriceOrder() {
+        return totalPriceOrder;
     }
 
-    public void setTotalPrice(long totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setTotalPriceOrder(long totalPriceOrder) {
+        this.totalPriceOrder = totalPriceOrder;
     }
 }
