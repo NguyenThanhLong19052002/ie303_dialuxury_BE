@@ -51,4 +51,15 @@ public class productServiceImpl implements productService {
     public List<product> getProductsByCategory(String category) {
         return productRepository.findByCategory(category);
     }
+
+    //search:
+    public List<product> searchProductsByName(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    //get new products:
+    public List<product> getNewProducts() {
+        // Đây chỉ là một ví dụ đơn giản. Bạn có thể thực hiện logic tìm kiếm và sắp xếp các sản phẩm mới ở đây.
+        return productRepository.findAll();
+    }
 }
