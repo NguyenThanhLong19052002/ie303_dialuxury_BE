@@ -4,6 +4,8 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface userRepository extends MongoRepository<user, String> {
     user findByEmail(String email);
@@ -11,4 +13,8 @@ public interface userRepository extends MongoRepository<user, String> {
 
     @Query("{'email': ?0}")
     void resetPassword(String email, String newPassword);
+
+    int countByRoleOrRoleIsNull(String role);
+
+    List<user> findByRoleOrRoleIsNull(String role);
 }
