@@ -9,6 +9,7 @@ import com.ie303.dialuxury.repository.productRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
+
 import java.util.List;
 
 @RestController
@@ -26,9 +27,8 @@ public class adminController {
 
     //    lấy danh sách user
     @GetMapping("/user")
-    public ResponseEntity<List> ShowUser() {
-        List<user> user = userRepository.findAll();
-        return ResponseEntity.ok(user);
+    public List<user> ShowUser() {
+        return userRepository.findByRoleOrRoleIsNull("user");
     }
 
     //    lấy ra hóa đơn có tình trạng là "chưa xử lý"
@@ -36,5 +36,29 @@ public class adminController {
 //    public List<order> getUnprocessedOrders() {
 //        return orderRepository.findByStatus("chưa xử lý");
 //    }
+
+    //    Đếm số lượng user
+    @GetMapping("/user/count")
+    public int CountUsersByRole() {
+        return userRepository.countByRoleOrRoleIsNull("user");
+    }
+
+    //    đếm số lượng order
+    @GetMapping("/order/count")
+    public long CountOrder() {
+        return orderRepository.count();
+    }
+
+    @GetMapping("/product/count")
+    public long CountProduct() {
+        return productRepository.count();
+    }
+
+    @GetMapping("/revenue")
+    public long CalculateTotalRevenue() {
+        return orderRepository.findAll().stream()
+                .mapToLong(order::getTotalPriceOrder)
+                .sum();
+    }
 
 }
