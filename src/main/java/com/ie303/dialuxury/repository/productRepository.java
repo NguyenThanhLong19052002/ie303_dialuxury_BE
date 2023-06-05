@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface productRepository extends MongoRepository<product, String> {
     List<product> findByNameContainingIgnoreCase(String name);
+
+    List<product> findByCategory(String category);
 }

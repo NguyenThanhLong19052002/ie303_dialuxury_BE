@@ -46,4 +46,9 @@ public class productServiceImpl implements productService {
     public void deleteProduct(String productid) {
         productRepository.deleteById(productid);
     }
+
+    //Category products:
+    public List<product> getProductsByCategory(String category) {
+        return productRepository.findByCategory(category);
+    }
 }

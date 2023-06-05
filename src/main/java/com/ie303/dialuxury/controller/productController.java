@@ -57,5 +57,11 @@ public class productController {
 //        return productRepository.findByNameContainingIgnoreCase(name);
 //    }
 
+    // category products:
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<product>> getProductsByCategory(@PathVariable String category) {
+        List<product> products = productService.getProductsByCategory(category);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 
 }
