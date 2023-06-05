@@ -9,5 +9,8 @@ public interface productService {
     public Optional<product> getProductById(String productid);
     public product updateProduct(String productid, product updatedProduct);
     public void deleteProduct(String productid);
+    public List<product> getProductsByCategory(String category);
+    public List<product> searchProductsByName(String name);
 
+    public List<product> getNewProducts();
 }

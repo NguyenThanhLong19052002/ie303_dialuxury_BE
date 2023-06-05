@@ -26,8 +26,8 @@ public class productController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
-    @GetMapping("/{_id}")
-    public ResponseEntity<product> getProductById(@PathVariable("_id") String productid) {
+    @GetMapping("/{productid}")
+    public ResponseEntity<product> getProductById(@PathVariable("productid") String productid) {
         Optional<product> product = productService.getProductById(productid);
         if (product.isPresent()) {
             return new ResponseEntity<>(product.get(), HttpStatus.OK);
@@ -51,11 +51,32 @@ public class productController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-//    @GetMapping("/search")
-//
-//    public List<product> searchProduct(@RequestParam("name") String name) {
-//        return productRepository.findByNameContainingIgnoreCase(name);
-//    }
+    @GetMapping("/search")
+    public ResponseEntity<List<product>> searchProductsByName(@RequestParam String name) {
+        List<product> products = productService.searchProductsByName(name);
+        if (products.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else {
+            return new ResponseEntity<>(products, HttpStatus.OK);
+        }
+    }
 
+    // category products:
+    @GetMapping("/category/{category}")
+    public ResponseEntity<List<product>> getProductsByCategory(@PathVariable String category) {
+        List<product> products = productService.getProductsByCategory(category);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    //get new products:
+    @GetMapping("/new")
+    public List<product> getNewProducts() {
+        // Lấy 4 sản phẩm mới nhất
+        List<product> allProducts = productService.getNewProducts();
+        int numProductsToShow = 4;
+        int startIndex = Math.max(0, allProducts.size() - numProductsToShow);
+        int endIndex = allProducts.size();
+        return allProducts.subList(startIndex, endIndex);
+    }
 
 }
