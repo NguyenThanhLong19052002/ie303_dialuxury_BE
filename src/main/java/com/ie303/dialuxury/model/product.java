@@ -7,8 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class product {
     @Id
-
-
     private String productid;
     private String name;
     private String image;
