@@ -12,11 +12,11 @@ public class orderDTO {
     public orderDTO() {
     }
 
-    public List<com.ie303.dialuxury.model.cart> getCart() {
+    public List<cart> getCart() {
         return cart;
     }
 
-    public void setCart(List<com.ie303.dialuxury.model.cart> cart) {
+    public void setCart(List<cart> cart) {
         this.cart = cart;
     }
 

@@ -30,7 +30,45 @@ public class orderServiceImpl implements orderService {
     }
 
     @Override
-    public void createOrderNoImage(String userId, orderDTO orderDTO){
+    public void createOrderHaveImage(String userId, order orderContainer){
+        // Đếm số lượng hoá đơn hiện có
+        long orderCount = orderRepository.count();
+        // Tạo mã định danh cho hoá đơn mới
+        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
+        order.setId(orderNumber);
+        order.setUserId(userId);
+        order.setImage(orderContainer.getImage());
+        order.setCreatedAt(new Date());
+        order.setStatus("Đang xử lý");
+        order.setShippingAddress(orderContainer.getShippingAddress());
+        order.setPaymentMethod(orderContainer.getPaymentMethod());
+        order.setTotalPriceOrder(orderContainer.getTotalPriceOrder());
+        orderRepository.save(order);
+
+    }
+
+    @Override
+    public void createOrderDetailHaveImage(orderDTO orderDTO){
+        long orderCount = orderRepository.count();
+        // Tạo mã định danh cho hoá đơn mới nhất
+        String orderNumber = "HD" + String.format("%02d", orderCount);
+        //set dữ liệu cho orderDetail
+        for(cart item : orderDTO.getCart()){
+            // Đếm số lượng chi tiết hoá đơn hiện có
+            long orderDetailCount = orderDetailRepository.count();
+            // Tạo mã định danh cho chi tiết hoá đơn mới
+            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
+            orderDetail.setId(orderDetailNumber);
+            orderDetail.setOrderId(orderNumber);
+            orderDetail.setProduct(item.getProduct());
+            orderDetail.setQuantity(item.getQuantity());
+            orderDetail.setTotalPrice(item.getTotalPrice());
+            orderDetailRepository.save(orderDetail);
+        }
+    }
+
+    @Override
+    public void createOrder(String userId, orderDTO orderDTO){
         // Đếm số lượng hoá đơn hiện có
         long orderCount = orderRepository.count();
         // Tạo mã định danh cho hoá đơn mới
@@ -61,34 +99,13 @@ public class orderServiceImpl implements orderService {
     }
 
     @Override
-    public void createOrder(String userId, String image, orderDTO orderDTO){
-        // Đếm số lượng hoá đơn hiện có
-        long orderCount = orderRepository.count();
-        // Tạo mã định danh cho hoá đơn mới
-        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
-        order.setId(orderNumber);
-        order.setUserId(userId);
-        order.setImage(image);
-        order.setCreatedAt(new Date());
-        order.setStatus("Đang xử lý");
-        order.setShippingAddress(orderDTO.getShippingAddress());
-        order.setPaymentMethod(orderDTO.getPaymentMethod());
-        order.setTotalPriceOrder(orderDTO.getTotal());
-        orderRepository.save(order);
-
-        //set dữ liệu cho orderDetail
-        for(cart item : orderDTO.getCart()){
-            // Đếm số lượng chi tiết hoá đơn hiện có
-            long orderDetailCount = orderDetailRepository.count();
-            // Tạo mã định danh cho chi tiết hoá đơn mới
-            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
-            orderDetail.setId(orderDetailNumber);
-            orderDetail.setOrderId(orderNumber);
-            orderDetail.setProduct(item.getProduct());
-            orderDetail.setQuantity(item.getQuantity());
-            orderDetail.setTotalPrice(item.getTotalPrice());
-            orderDetailRepository.save(orderDetail);
+    public order updateImage(String imageName){
+        order lastOrder = orderRepository.findTopByOrderByCreatedAtDesc();
+        if(lastOrder != null){
+            lastOrder.setImage(imageName);
+            return orderRepository.save(lastOrder);
         }
+        return null;
     }
 
     @Override

@@ -10,11 +10,11 @@ public class cart {
     public cart() {
     }
 
-    public com.ie303.dialuxury.model.product getProduct() {
+    public product getProduct() {
         return product;
     }
 
-    public void setProduct(com.ie303.dialuxury.model.product product) {
+    public void setProduct(product product) {
         this.product = product;
     }
 
