@@ -73,6 +73,11 @@ public class orderController {
         }
     }
 
+    @GetMapping("/user/{userId}/order")
+    public List<order> getOrdersByUserId(@PathVariable String userId) {
+        return orderRepository.findByUserId(userId);
+    }
+
     @GetMapping("/order/{orderId}")
     public ResponseEntity<List<orderAggregate>> getOrdersWithDetailsByOrderId(@PathVariable String orderId) {
         List<orderAggregate> orderAggregates = orderService.getOrdersWithDetailsByOrerId(orderId);
