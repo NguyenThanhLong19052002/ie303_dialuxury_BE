@@ -123,4 +123,14 @@ public class orderController {
         return new ResponseEntity<>("Order created successfully", HttpStatus.CREATED);
     }
 
+    @PutMapping("/{orderId}/updateStatus")
+    public order updateOrderStatus(@PathVariable("orderId") String orderId, @RequestBody String status) {
+        order order = orderRepository.findById(orderId).orElse(null);
+        if (order != null) {
+            order.setStatus(status);
+            return orderRepository.save(order);
+        }
+        return null;
+    }
+
 }
