@@ -2,6 +2,7 @@ package com.ie303.dialuxury.service;
 import com.ie303.dialuxury.model.*;
 import com.ie303.dialuxury.repository.orderRepository;
 import com.ie303.dialuxury.repository.orderDetailRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -29,13 +30,17 @@ public class orderServiceImpl implements orderService {
         this.mongoTemplate = mongoTemplate;
     }
 
+//    private String orderIdStringClone;
     @Override
     public void createOrderHaveImage(String userId, order orderContainer){
         // Đếm số lượng hoá đơn hiện có
-        long orderCount = orderRepository.count();
+//        long orderCount = orderRepository.count();
         // Tạo mã định danh cho hoá đơn mới
-        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
-        order.setId(orderNumber);
+//        orderNumberClone = "HD" + String.format("%02d", orderCount + 1);
+        ObjectId orderIdObjectIdClone = new ObjectId();
+        String orderIdStringClone = "HD" + orderIdObjectIdClone.toString();
+
+        order.setId(orderIdStringClone);
         order.setUserId(userId);
         order.setImage(orderContainer.getImage());
         order.setCreatedAt(new Date());
@@ -49,17 +54,24 @@ public class orderServiceImpl implements orderService {
 
     @Override
     public void createOrderDetailHaveImage(orderDTO orderDTO){
-        long orderCount = orderRepository.count();
-        // Tạo mã định danh cho hoá đơn mới nhất
-        String orderNumber = "HD" + String.format("%02d", orderCount);
+//        long orderCount = orderRepository.count();
+//        // Tạo mã định danh cho hoá đơn mới nhất
+//        String orderNumber = "HD" + String.format("%02d", orderCount);
+
+        //Lấy order vừa tạo
+        order orderCreated = orderRepository.findTopByOrderByCreatedAtDesc();
+
         //set dữ liệu cho orderDetail
         for(cart item : orderDTO.getCart()){
             // Đếm số lượng chi tiết hoá đơn hiện có
-            long orderDetailCount = orderDetailRepository.count();
+//            long orderDetailCount = orderDetailRepository.count();
             // Tạo mã định danh cho chi tiết hoá đơn mới
-            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
-            orderDetail.setId(orderDetailNumber);
-            orderDetail.setOrderId(orderNumber);
+//            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
+            ObjectId orderDetailIdObjectIdClone = new ObjectId();
+            String orderDetailIdStringClone = "CTHD" + orderDetailIdObjectIdClone.toString();
+
+            orderDetail.setId(orderDetailIdStringClone);
+            orderDetail.setOrderId(orderCreated.getId());
             orderDetail.setProduct(item.getProduct());
             orderDetail.setQuantity(item.getQuantity());
             orderDetail.setTotalPrice(item.getTotalPrice());
@@ -70,10 +82,14 @@ public class orderServiceImpl implements orderService {
     @Override
     public void createOrder(String userId, orderDTO orderDTO){
         // Đếm số lượng hoá đơn hiện có
-        long orderCount = orderRepository.count();
+//        long orderCount = orderRepository.count();
         // Tạo mã định danh cho hoá đơn mới
-        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
-        order.setId(orderNumber);
+//        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
+
+        ObjectId orderIdObjectId = new ObjectId();
+
+        String orderIdString = "HD" + orderIdObjectId.toString();
+        order.setId(orderIdString);
         order.setUserId(userId);
         order.setImage(orderDTO.getImage());
         order.setCreatedAt(new Date());
@@ -86,11 +102,13 @@ public class orderServiceImpl implements orderService {
         //set dữ liệu cho orderDetail
         for(cart item : orderDTO.getCart()){
             // Đếm số lượng chi tiết hoá đơn hiện có
-            long orderDetailCount = orderDetailRepository.count();
+//            long orderDetailCount = orderDetailRepository.count();
             // Tạo mã định danh cho chi tiết hoá đơn mới
-            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
-            orderDetail.setId(orderDetailNumber);
-            orderDetail.setOrderId(orderNumber);
+//            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
+            ObjectId orderDetailIdObjectId = new ObjectId();
+            String orderDetailIdString = "CTHD" + orderDetailIdObjectId.toString();
+            orderDetail.setId(orderDetailIdString);
+            orderDetail.setOrderId(orderIdString);
             orderDetail.setProduct(item.getProduct());
             orderDetail.setQuantity(item.getQuantity());
             orderDetail.setTotalPrice(item.getTotalPrice());
