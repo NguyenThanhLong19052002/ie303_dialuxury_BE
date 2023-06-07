@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,6 +24,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private userServiceImpl userDetailsService;
+
+    @Override
+    public void configure(WebSecurity web) {
+        web.ignoring().antMatchers("/orders/{orderId}/getImage");
+    }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
@@ -52,9 +58,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/product/count").permitAll()
                 .antMatchers("/admin/revenue").permitAll()
                 .antMatchers("/admin/user").permitAll()
-                .antMatchers("/orders/user/{userId}").permitAll()
-                .antMatchers("/orders/order/{orderId}").permitAll()
-                .antMatchers("/orders/user/{userId}/order").permitAll()
 
                 .anyRequest().authenticated()
                 .and().cors();

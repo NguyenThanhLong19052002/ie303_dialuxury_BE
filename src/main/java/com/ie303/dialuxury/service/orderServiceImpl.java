@@ -118,12 +118,44 @@ public class orderServiceImpl implements orderService {
         return getOrdersWithDetails_OrderId(orderId);
     }
 
+    @Override
+    public List<orderAggregate> getOrdersWithDetails(){
+        return getOrdersWithDetailsPrivate();
+    }
+
+    private List<orderAggregate> getOrdersWithDetailsPrivate() {
+        TypedAggregation<order> aggregation = Aggregation.newAggregation(order.class,
+                Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
+                Aggregation.unwind("orderDetails"),
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
+                        .and("orderDetails.product").as("product")
+                        .and("orderDetails._id").as("orderDetailId")
+        );
+
+        return mongoTemplate.aggregate(aggregation, "order", orderAggregate.class).getMappedResults();
+    }
+
+    @Override
+    public boolean deleteOrderById(String orderId){
+        order order = orderRepository.findById(orderId).orElse(null);
+        if(order != null){
+            orderRepository.deleteById(orderId);
+            orderDetailRepository.deleteByOrderId(orderId);
+            return true;
+        }
+        return false;
+    }
+
     private List<orderAggregate> getOrdersWithDetails_UserId(String userId){
         TypedAggregation<order> aggregation = Aggregation.newAggregation(order.class,
                 Aggregation.match(Criteria.where("userId").is(userId)),
                 Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
                 Aggregation.unwind("orderDetails"),
-                Aggregation.project("_id", "userId", "status", "shippingAddress", "totalPriceOrder", "createdAt", "orderDetails.quantity", "orderDetails.totalPrice")
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
                         .and("orderDetails.product").as("product")
                         .and("orderDetails._id").as("orderDetailId")
 //                        .andExclude()
@@ -136,7 +168,9 @@ public class orderServiceImpl implements orderService {
                 Aggregation.match(Criteria.where("_id").is(orderId)),
                 Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
                 Aggregation.unwind("orderDetails"),
-                Aggregation.project("_id", "userId", "status", "shippingAddress", "totalPriceOrder", "createdAt", "orderDetails.quantity", "orderDetails.totalPrice")
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
                         .and("orderDetails.product").as("product")
                         .and("orderDetails._id").as("orderDetailId")
 //                        .andExclude()

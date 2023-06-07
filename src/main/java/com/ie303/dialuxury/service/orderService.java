@@ -11,9 +11,12 @@ public interface orderService {
     public void createOrderHaveImage(String userId, order orderContainer);
     public void createOrder(String userId, orderDTO orderDTO);
     public void createOrderDetailHaveImage(orderDTO orderDTO);
+    public List<orderAggregate> getOrdersWithDetails();
     public List<orderAggregate> getOrdersWithDetailsByUserId(String userId);
     public List<orderAggregate> getOrdersWithDetailsByOrerId(String orderId);
 
     public order updateImage(String imageName);
 
+    public boolean deleteOrderById(String orderId);
+//    public void deleteOrderDetailByOrderId(String orderId);
 }

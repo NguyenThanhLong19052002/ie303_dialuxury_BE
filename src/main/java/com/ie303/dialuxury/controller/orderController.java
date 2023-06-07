@@ -6,16 +6,22 @@ import com.ie303.dialuxury.model.orderDTO;
 import com.ie303.dialuxury.model.orderAggregate;
 import com.ie303.dialuxury.service.orderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ie303.dialuxury.repository.orderRepository;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
+import org.springframework.core.io.FileSystemResource;
 
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,6 +36,16 @@ public class orderController {
     public orderController(orderServiceImpl orderService, orderRepository orderRepository) {
         this.orderService = orderService;
         this.orderRepository = orderRepository;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<orderAggregate>> getAllOrdersWithDetails() {
+        List<orderAggregate> orderAggregates = orderService.getOrdersWithDetails();
+        if (orderAggregates.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        } else {
+            return ResponseEntity.ok(orderAggregates);
+        }
     }
 
     @GetMapping("/user/{userId}")
@@ -65,6 +81,23 @@ public class orderController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+    }
+
+    @GetMapping("/{orderId}/getImage")
+    public ResponseEntity<Resource> getImageByOrderId(@PathVariable String orderId) {
+        order order = orderRepository.findById(orderId).orElse(null);
+        if (order != null && order.getImage() != null) {
+            String imagePath = "src/PaymentImages/" + order.getImage();
+            Path imageFilePath = Paths.get(imagePath);
+            if (Files.exists(imageFilePath)){
+                Resource imageResource = new FileSystemResource(imageFilePath.toFile());
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.IMAGE_JPEG);
+                return ResponseEntity.ok().headers(headers).body(imageResource);
+            }
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/{userId}/createOrder")
@@ -124,13 +157,23 @@ public class orderController {
     }
 
     @PutMapping("/{orderId}/updateStatus")
-    public order updateOrderStatus(@PathVariable("orderId") String orderId, @RequestBody String status) {
+    public order updateOrderStatus(@PathVariable("orderId") String orderId, @RequestBody order orderData) {
         order order = orderRepository.findById(orderId).orElse(null);
         if (order != null) {
-            order.setStatus(status);
+            order.setStatus(orderData.getStatus());
             return orderRepository.save(order);
         }
         return null;
+    }
+
+    @DeleteMapping("/{orderId}/delete")
+    public ResponseEntity<String> deleteOrderById(@PathVariable String orderId) {
+        boolean isDeleted = orderService.deleteOrderById(orderId);
+        if (isDeleted) {
+            return new ResponseEntity<>("Order deleted successfully", HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Order not found", HttpStatus.NOT_FOUND);
+        }
     }
 
 }
