@@ -26,6 +26,17 @@ public class productController {
         return new ResponseEntity<>(products, HttpStatus.OK);
     }
 
+    // category products:
+//    @GetMapping("/category/{category}")
+//    public ResponseEntity<List<product>> getProductsByCategory(@PathVariable String category) {
+//        List<product> products = productService.getProductsByCategory(category);
+//        return new ResponseEntity<>(products, HttpStatus.OK);
+//    }
+    @GetMapping("/category/{category}")
+    public List<product> getProductsByCategory(@PathVariable String category) {
+        return productService.getProductsByCategory(category);
+    }
+
     @GetMapping("/{productid}")
     public ResponseEntity<product> getProductById(@PathVariable("productid") String productid) {
         Optional<product> product = productService.getProductById(productid);
@@ -61,12 +72,6 @@ public class productController {
         }
     }
 
-    // category products:
-    @GetMapping("/category/{category}")
-    public ResponseEntity<List<product>> getProductsByCategory(@PathVariable String category) {
-        List<product> products = productService.getProductsByCategory(category);
-        return new ResponseEntity<>(products, HttpStatus.OK);
-    }
 
     //get new products:
     @GetMapping("/new")

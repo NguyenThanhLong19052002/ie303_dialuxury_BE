@@ -48,8 +48,10 @@ public class productServiceImpl implements productService {
     }
 
     //Category products:
+
+    @Override
     public List<product> getProductsByCategory(String category) {
-        return productRepository.findByCategory(category);
+        return productRepository.findAllByCategory(category);
     }
 
     //search:
