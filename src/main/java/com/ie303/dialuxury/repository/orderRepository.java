@@ -18,4 +18,5 @@ public interface orderRepository extends MongoRepository<order, String> {
     Optional<order> findById(String orderId);
 
     order findTopByOrderByCreatedAtDesc();
+    List<order> findAll();
 }

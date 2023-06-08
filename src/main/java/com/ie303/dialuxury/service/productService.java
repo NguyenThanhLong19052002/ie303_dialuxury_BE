@@ -6,11 +6,13 @@ import java.util.Optional;
 public interface productService {
     public product addProduct(product product);
     public List<product> getAllProducts();
+    List<product> getProductsByCategory(String category);
     public Optional<product> getProductById(String productid);
     public product updateProduct(String productid, product updatedProduct);
     public void deleteProduct(String productid);
-    public List<product> getProductsByCategory(String category);
+
     public List<product> searchProductsByName(String name);
 
     public List<product> getNewProducts();
+    int getQuantitySold(String productid);
 }
