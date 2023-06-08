@@ -18,7 +18,12 @@ public class product {
     private String mass;
     private String size;
 
+
+
+    private int quanlitySold;
+
     public product() {
+        this.quanlitySold = 0;
     }
 
     public String getproductid() {
@@ -100,4 +105,13 @@ public class product {
     public void setSize(String size) {
         this.size = size;
     }
+
+    public int getQuanlitySold() {
+        return quanlitySold;
+    }
+
+    public void setQuanlitySold(int quanlitySold) {
+        this.quanlitySold = quanlitySold;
+    }
+
 }
