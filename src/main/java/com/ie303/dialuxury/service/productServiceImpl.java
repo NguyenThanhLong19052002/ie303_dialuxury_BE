@@ -1,7 +1,9 @@
 package com.ie303.dialuxury.service;
 
 import com.ie303.dialuxury.model.product;
+import com.ie303.dialuxury.model.order;
 import com.ie303.dialuxury.repository.productRepository;
+import com.ie303.dialuxury.repository.orderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -13,6 +15,8 @@ import java.util.Optional;
 public class productServiceImpl implements productService {
     @Autowired
     private productRepository productRepository;
+    private orderRepository orderRepository;
+
 
     //add product:
 
@@ -26,6 +30,10 @@ public class productServiceImpl implements productService {
         return productRepository.findAll();
     }
 
+    @Override
+    public List<product> getProductsByCategory(String category) {
+        return productRepository.findAllByCategory(category);
+    }
     //get by id:
     public Optional<product> getProductById(String productid){
         return productRepository.findById(productid);
@@ -49,10 +57,7 @@ public class productServiceImpl implements productService {
 
     //Category products:
 
-    @Override
-    public List<product> getProductsByCategory(String category) {
-        return productRepository.findAllByCategory(category);
-    }
+
 
     //search:
     public List<product> searchProductsByName(String name) {
@@ -63,5 +68,16 @@ public class productServiceImpl implements productService {
     public List<product> getNewProducts() {
         // Đây chỉ là một ví dụ đơn giản. Bạn có thể thực hiện logic tìm kiếm và sắp xếp các sản phẩm mới ở đây.
         return productRepository.findAll();
+    }
+
+    @Override
+    public int getQuantitySold(String productid) {
+        int quantitySold = 0;
+        for (order order : orderRepository.findAll()) {
+            if ("\\u0110\\u00e3 giao h\\u00e0ng".equals(order.getStatus())) {
+                quantitySold++;
+            }
+        }
+        return quantitySold;
     }
 }

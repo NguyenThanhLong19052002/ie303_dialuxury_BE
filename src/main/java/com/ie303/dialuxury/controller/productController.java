@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collections;
 @RestController
 @RequestMapping("/product")
 @CrossOrigin
@@ -33,8 +34,12 @@ public class productController {
 //        return new ResponseEntity<>(products, HttpStatus.OK);
 //    }
     @GetMapping("/category/{category}")
-    public List<product> getProductsByCategory(@PathVariable String category) {
-        return productService.getProductsByCategory(category);
+    public ResponseEntity<List<product>> getProductsByCategory(@PathVariable String category) {
+        List<product> products = productService.getProductsByCategory(category);
+        if (products.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/{productid}")
@@ -81,7 +86,17 @@ public class productController {
         int numProductsToShow = 4;
         int startIndex = Math.max(0, allProducts.size() - numProductsToShow);
         int endIndex = allProducts.size();
-        return allProducts.subList(startIndex, endIndex);
+        List<product> newProducts = allProducts.subList(startIndex, endIndex);
+
+        // Đảo ngược danh sách sản phẩm
+        Collections.reverse(newProducts);
+
+        return newProducts;
+    }
+
+    @GetMapping("/{productid}/quantitySold")
+    public int getQuantitySold(@PathVariable String productid) {
+        return productService.getQuantitySold(productid);
     }
 
 }
