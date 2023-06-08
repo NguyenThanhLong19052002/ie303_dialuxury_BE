@@ -2,13 +2,16 @@ package com.ie303.dialuxury.service;
 import com.ie303.dialuxury.model.*;
 import com.ie303.dialuxury.repository.orderRepository;
 import com.ie303.dialuxury.repository.orderDetailRepository;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -27,13 +30,66 @@ public class orderServiceImpl implements orderService {
         this.mongoTemplate = mongoTemplate;
     }
 
+//    private String orderIdStringClone;
+    @Override
+    public void createOrderHaveImage(String userId, order orderContainer){
+        // Đếm số lượng hoá đơn hiện có
+//        long orderCount = orderRepository.count();
+        // Tạo mã định danh cho hoá đơn mới
+//        orderNumberClone = "HD" + String.format("%02d", orderCount + 1);
+        ObjectId orderIdObjectIdClone = new ObjectId();
+        String orderIdStringClone = "HD" + orderIdObjectIdClone.toString();
+
+        order.setId(orderIdStringClone);
+        order.setUserId(userId);
+        order.setImage(orderContainer.getImage());
+        order.setCreatedAt(new Date());
+        order.setStatus("Đang xử lý");
+        order.setShippingAddress(orderContainer.getShippingAddress());
+        order.setPaymentMethod(orderContainer.getPaymentMethod());
+        order.setTotalPriceOrder(orderContainer.getTotalPriceOrder());
+        orderRepository.save(order);
+
+    }
+
+    @Override
+    public void createOrderDetailHaveImage(orderDTO orderDTO){
+//        long orderCount = orderRepository.count();
+//        // Tạo mã định danh cho hoá đơn mới nhất
+//        String orderNumber = "HD" + String.format("%02d", orderCount);
+
+        //Lấy order vừa tạo
+        order orderCreated = orderRepository.findTopByOrderByCreatedAtDesc();
+
+        //set dữ liệu cho orderDetail
+        for(cart item : orderDTO.getCart()){
+            // Đếm số lượng chi tiết hoá đơn hiện có
+//            long orderDetailCount = orderDetailRepository.count();
+            // Tạo mã định danh cho chi tiết hoá đơn mới
+//            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
+            ObjectId orderDetailIdObjectIdClone = new ObjectId();
+            String orderDetailIdStringClone = "CTHD" + orderDetailIdObjectIdClone.toString();
+
+            orderDetail.setId(orderDetailIdStringClone);
+            orderDetail.setOrderId(orderCreated.getId());
+            orderDetail.setProduct(item.getProduct());
+            orderDetail.setQuantity(item.getQuantity());
+            orderDetail.setTotalPrice(item.getTotalPrice());
+            orderDetailRepository.save(orderDetail);
+        }
+    }
+
     @Override
     public void createOrder(String userId, orderDTO orderDTO){
         // Đếm số lượng hoá đơn hiện có
-        long orderCount = orderRepository.count();
+//        long orderCount = orderRepository.count();
         // Tạo mã định danh cho hoá đơn mới
-        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
-        order.setId(orderNumber);
+//        String orderNumber = "HD" + String.format("%02d", orderCount + 1);
+
+        ObjectId orderIdObjectId = new ObjectId();
+
+        String orderIdString = "HD" + orderIdObjectId.toString();
+        order.setId(orderIdString);
         order.setUserId(userId);
         order.setImage(orderDTO.getImage());
         order.setCreatedAt(new Date());
@@ -46,16 +102,28 @@ public class orderServiceImpl implements orderService {
         //set dữ liệu cho orderDetail
         for(cart item : orderDTO.getCart()){
             // Đếm số lượng chi tiết hoá đơn hiện có
-            long orderDetailCount = orderDetailRepository.count();
+//            long orderDetailCount = orderDetailRepository.count();
             // Tạo mã định danh cho chi tiết hoá đơn mới
-            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
-            orderDetail.setId(orderDetailNumber);
-            orderDetail.setOrderId(orderNumber);
+//            String orderDetailNumber = "CTHD" + String.format("%02d", orderDetailCount + 1);
+            ObjectId orderDetailIdObjectId = new ObjectId();
+            String orderDetailIdString = "CTHD" + orderDetailIdObjectId.toString();
+            orderDetail.setId(orderDetailIdString);
+            orderDetail.setOrderId(orderIdString);
             orderDetail.setProduct(item.getProduct());
             orderDetail.setQuantity(item.getQuantity());
             orderDetail.setTotalPrice(item.getTotalPrice());
             orderDetailRepository.save(orderDetail);
         }
+    }
+
+    @Override
+    public order updateImage(String imageName){
+        order lastOrder = orderRepository.findTopByOrderByCreatedAtDesc();
+        if(lastOrder != null){
+            lastOrder.setImage(imageName);
+            return orderRepository.save(lastOrder);
+        }
+        return null;
     }
 
     @Override
@@ -68,12 +136,44 @@ public class orderServiceImpl implements orderService {
         return getOrdersWithDetails_OrderId(orderId);
     }
 
+    @Override
+    public List<orderAggregate> getOrdersWithDetails(){
+        return getOrdersWithDetailsPrivate();
+    }
+
+    private List<orderAggregate> getOrdersWithDetailsPrivate() {
+        TypedAggregation<order> aggregation = Aggregation.newAggregation(order.class,
+                Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
+                Aggregation.unwind("orderDetails"),
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
+                        .and("orderDetails.product").as("product")
+                        .and("orderDetails._id").as("orderDetailId")
+        );
+
+        return mongoTemplate.aggregate(aggregation, "order", orderAggregate.class).getMappedResults();
+    }
+
+    @Override
+    public boolean deleteOrderById(String orderId){
+        order order = orderRepository.findById(orderId).orElse(null);
+        if(order != null){
+            orderRepository.deleteById(orderId);
+            orderDetailRepository.deleteByOrderId(orderId);
+            return true;
+        }
+        return false;
+    }
+
     private List<orderAggregate> getOrdersWithDetails_UserId(String userId){
         TypedAggregation<order> aggregation = Aggregation.newAggregation(order.class,
                 Aggregation.match(Criteria.where("userId").is(userId)),
                 Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
                 Aggregation.unwind("orderDetails"),
-                Aggregation.project("_id", "userId", "status", "shippingAddress", "totalPriceOrder", "createdAt", "orderDetails.quantity", "orderDetails.totalPrice")
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
                         .and("orderDetails.product").as("product")
                         .and("orderDetails._id").as("orderDetailId")
 //                        .andExclude()
@@ -86,7 +186,9 @@ public class orderServiceImpl implements orderService {
                 Aggregation.match(Criteria.where("_id").is(orderId)),
                 Aggregation.lookup("orderDetail", "_id", "orderId", "orderDetails"),
                 Aggregation.unwind("orderDetails"),
-                Aggregation.project("_id", "userId", "status", "shippingAddress", "totalPriceOrder", "createdAt", "orderDetails.quantity", "orderDetails.totalPrice")
+                Aggregation.project("_id", "userId", "status", "shippingAddress", "paymentMethod", "totalPriceOrder", "createdAt")
+                        .and("orderDetails.quantity").as("quantity")
+                        .and("orderDetails.totalPrice").as("totalPrice")
                         .and("orderDetails.product").as("product")
                         .and("orderDetails._id").as("orderDetailId")
 //                        .andExclude()
