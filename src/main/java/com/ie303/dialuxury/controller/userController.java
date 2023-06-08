@@ -1,13 +1,10 @@
 package com.ie303.dialuxury.controller;
 
-import com.ie303.dialuxury.model.user;
-import com.ie303.dialuxury.model.order;
-import com.ie303.dialuxury.model.product;
+import com.ie303.dialuxury.model.*;
 import com.ie303.dialuxury.service.userServiceImpl;
 //import com.ie303.dialuxury.service.userService;
 import com.ie303.dialuxury.repository.userRepository;
 import com.ie303.dialuxury.repository.orderRepository;
-import com.ie303.dialuxury.model.AuthResponse;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -280,6 +277,22 @@ public class userController {
         return "Verification code sent to email";
     }
 
+    @PostMapping("/{email}/sendConfirmOrderEmail")
+    @ResponseBody
+    public String SendConfirmOrderEmail(@PathVariable String email, @RequestBody orderDTO dataOrder) {
+        // Kiểm tra sự tồn tại của email trong hệ thống
+        user user = userRepository.findByEmail(email);
+        if (user == null) {
+            return "Email not found";
+        }
+
+
+        // Gửi email xác nhận
+        sendOrderConfirmationEmail(email, dataOrder);
+
+        return "Verification code sent to email";
+    }
+
     @GetMapping("/{email}/reset")
     @ResponseBody
     public ResponseEntity<String> resetPassword(@PathVariable String email, @RequestParam("code") String code) {
@@ -335,6 +348,29 @@ public class userController {
         message.setTo(email);
         message.setSubject("Reset Password Verification Code");
         message.setText("Your verification code is: " + verificationCode);
+        javaMailSender.send(message);
+    }
+
+    private void sendOrderConfirmationEmail(String email, orderDTO dataOrder) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Xác Nhận Đơn Hàng");
+
+        StringBuilder text = new StringBuilder();
+        text.append("Đơn hàng xác nhận thành công. Cảm ơn quý khách đã tin tưởng Dialuxury!\n\n");
+        text.append("Chi tiết đơn hàng:\n");
+        text.append(String.format("%-20s %-10s %-10s %-10s%n", "Sản phẩm", "Đơn giá", "Số lượng", "Thành tiền"));
+        for(cart item : dataOrder.getCart()){
+            String productName = item.getProduct().getName();
+            Number productPrice = item.getProduct().getPrice();
+            int qtt = item.getQuantity();
+            long totalPrice = item.getTotalPrice();
+            text.append(String.format("%-20s %-10s %-10s %-10s%n", productName, productPrice, qtt, totalPrice));
+        }
+        text.append("\nTổng cộng: " + dataOrder.getTotal());
+        text.append("\nPhương thức thanh toán: " + dataOrder.getPaymentMethod());
+
+        message.setText(text.toString());
         javaMailSender.send(message);
     }
 }
