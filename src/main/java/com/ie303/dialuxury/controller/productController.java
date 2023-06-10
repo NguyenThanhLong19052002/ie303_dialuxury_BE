@@ -83,20 +83,16 @@ public class productController {
     public List<product> getNewProducts() {
         // Lấy 4 sản phẩm mới nhất
         List<product> allProducts = productService.getNewProducts();
-        int numProductsToShow = 4;
-        int startIndex = Math.max(0, allProducts.size() - numProductsToShow);
-        int endIndex = allProducts.size();
-        List<product> newProducts = allProducts.subList(startIndex, endIndex);
+       
 
         // Đảo ngược danh sách sản phẩm
-        Collections.reverse(newProducts);
+        Collections.reverse(allProducts);
 
-        return newProducts;
+        return allProducts;
     }
-
-    @GetMapping("/{productid}/quantitySold")
-    public int getQuantitySold(@PathVariable String productid) {
-        return productService.getQuantitySold(productid);
+    @GetMapping("/sortedQuantitySold")
+    public List<product> getProductsSortedByQuantitySold() {
+        return productService.getAllProductsSortedByQuantitySold();
     }
 
 }
