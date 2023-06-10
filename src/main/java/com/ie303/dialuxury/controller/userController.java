@@ -6,6 +6,7 @@ import com.ie303.dialuxury.service.userServiceImpl;
 import com.ie303.dialuxury.repository.userRepository;
 import com.ie303.dialuxury.repository.orderRepository;
 
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,8 @@ import org.springframework.http.HttpStatus;
 import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import com.ie303.dialuxury.config.Error;
@@ -352,25 +355,39 @@ public class userController {
     }
 
     private void sendOrderConfirmationEmail(String email, orderDTO dataOrder) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("Xác Nhận Đơn Hàng");
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(email);
+            helper.setSubject("Xác Nhận Đơn Hàng");
 
-        StringBuilder text = new StringBuilder();
-        text.append("Đơn hàng xác nhận thành công. Cảm ơn quý khách đã tin tưởng Dialuxury!\n\n");
-        text.append("Chi tiết đơn hàng:\n");
-        text.append(String.format("%-20s %-10s %-10s %-10s%n", "Sản phẩm", "Đơn giá", "Số lượng", "Thành tiền"));
-        for(cart item : dataOrder.getCart()){
-            String productName = item.getProduct().getName();
-            Number productPrice = item.getProduct().getPrice();
-            int qtt = item.getQuantity();
-            long totalPrice = item.getTotalPrice();
-            text.append(String.format("%-20s %-10s %-10s %-10s%n", productName, productPrice, qtt, totalPrice));
+            StringBuilder text = new StringBuilder();
+            text.append("Đơn hàng của bạn đã được xác nhận và đã được giao cho bên vận chuyển. Dự tính đơn hàng sẽ được giao sớm nhất trong 2 - 3 ngày kể từ khi quý khách nhận được mail xác nhận. <br>");
+            text.append("Cảm ơn quý khách đã tin tưởng Dialuxury!<br><br>");
+            text.append("Chi tiết đơn hàng:<br>");
+            text.append("<table style='margin: 0 auto; text-align: center; border-collapse: collapse;'>");
+            text.append("<tr style='background-color: #f2f2f2;'><th style='padding: 8px; border: 1px solid #ddd;'>Sản phẩm</th><th style='padding: 8px; border: 1px solid #ddd;'>Đơn giá</th><th style='padding: 8px; border: 1px solid #ddd;'>Số lượng</th><th style='padding: 8px; border: 1px solid #ddd;'>Thành tiền</th></tr>");
+            for (cart item : dataOrder.getCart()) {
+                String productName = item.getProduct().getName();
+                Number productPrice = item.getProduct().getPrice();
+                int qtt = item.getQuantity();
+                long totalPrice = item.getTotalPrice();
+                text.append("<tr>");
+                text.append("<td style='padding: 8px; border: 1px solid #ddd;'>").append(productName).append("</td>");
+                text.append("<td style='padding: 8px; border: 1px solid #ddd;'>").append(productPrice).append("</td>");
+                text.append("<td style='padding: 8px; border: 1px solid #ddd;'>").append(qtt).append("</td>");
+                text.append("<td style='padding: 8px; border: 1px solid #ddd;'>").append(totalPrice).append("</td>");
+                text.append("</tr>");
+            }
+            text.append("</table>");
+            text.append("<br>Tổng cộng: ").append(dataOrder.getTotal());
+            text.append("<br>Phương thức thanh toán: ").append(dataOrder.getPaymentMethod());
+
+            helper.setText(text.toString(), true);
+
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            // Xử lý lỗi nếu cần thiết
         }
-        text.append("\nTổng cộng: " + dataOrder.getTotal());
-        text.append("\nPhương thức thanh toán: " + dataOrder.getPaymentMethod());
-
-        message.setText(text.toString());
-        javaMailSender.send(message);
     }
 }
