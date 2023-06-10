@@ -14,5 +14,6 @@ public interface productService {
     public List<product> searchProductsByName(String name);
 
     public List<product> getNewProducts();
-    int getQuantitySold(String productid);
+    List<product> getAllProductsSortedByQuantitySold();
+
 }

@@ -20,10 +20,10 @@ public class product {
 
 
 
-    private int quanlitySold;
+    private int quantitySold;
 
     public product() {
-        this.quanlitySold = 0;
+        this.quantitySold = 0;
     }
 
     public String getproductid() {
@@ -106,12 +106,12 @@ public class product {
         this.size = size;
     }
 
-    public int getQuanlitySold() {
-        return quanlitySold;
+    public int getQuantitySold() {
+        return quantitySold;
     }
 
-    public void setQuanlitySold(int quanlitySold) {
-        this.quanlitySold = quanlitySold;
+    public void setQuantitySold(int quantitySold) {
+        this.quantitySold = quantitySold;
     }
 
 }

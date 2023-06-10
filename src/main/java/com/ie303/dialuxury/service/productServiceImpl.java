@@ -71,13 +71,8 @@ public class productServiceImpl implements productService {
     }
 
     @Override
-    public int getQuantitySold(String productid) {
-        int quantitySold = 0;
-        for (order order : orderRepository.findAll()) {
-            if ("\\u0110\\u00e3 giao h\\u00e0ng".equals(order.getStatus())) {
-                quantitySold++;
-            }
-        }
-        return quantitySold;
+    public List<product> getAllProductsSortedByQuantitySold() {
+        return productRepository.findAllByOrderByQuantitySoldDesc();
     }
+
 }
